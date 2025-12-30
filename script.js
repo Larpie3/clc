@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const ingredientContainer = document.getElementById("ingredients");
+  const ingredientsDiv = document.getElementById("ingredients");
   const resultsDiv = document.getElementById("results");
-  const savedRecipesDiv = document.getElementById("savedRecipes");
+  const savedDiv = document.getElementById("savedRecipes");
   const chartCanvas = document.getElementById("chart");
 
   let chart;
@@ -12,10 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
     div.innerHTML = `
       <input placeholder="Name" value="${name}">
       <input type="number" placeholder="%" value="${percent}">
-      <button type="button">✕</button>
+      <button>✕</button>
     `;
     div.querySelector("button").onclick = () => div.remove();
-    ingredientContainer.appendChild(div);
+    ingredientsDiv.appendChild(div);
   }
 
   function autoBalance() {
@@ -29,9 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function calculate() {
-    const total = Number(document.getElementById("totalAmount").value);
+    const total = Number(totalAmount.value);
     const unit = document.getElementById("unit").value;
-    const rounding = Number(document.getElementById("rounding").value);
+    const rounding = Number(roundingSelect.value);
     const rows = document.querySelectorAll(".ingredient");
 
     let sum = 0;
@@ -57,7 +57,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (chart) chart.destroy();
     chart = new Chart(chartCanvas, {
       type: "pie",
-      data: { labels, datasets: [{ data: values }] }
+      data: {
+        labels,
+        datasets: [{ data: values }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right" }
+        }
+      }
     });
   }
 
@@ -82,18 +92,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadRecipes() {
-    savedRecipesDiv.innerHTML = "";
+    savedDiv.innerHTML = "";
     const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
     recipes.forEach(r => {
       const btn = document.createElement("button");
       btn.textContent = r.name;
       btn.onclick = () => loadRecipe(r);
-      savedRecipesDiv.appendChild(btn);
+      savedDiv.appendChild(btn);
     });
   }
 
   function loadRecipe(r) {
-    ingredientContainer.innerHTML = "";
+    ingredientsDiv.innerHTML = "";
     totalAmount.value = r.total;
     unit.value = r.unit;
     r.ingredients.forEach(i => addIngredient(i.name, i.percent));
