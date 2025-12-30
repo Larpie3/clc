@@ -1,137 +1,125 @@
-:root {
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --text: #222;
-  --accent: #4f46e5;
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const ingredientsDiv = document.getElementById("ingredients");
+  const resultsDiv = document.getElementById("results");
+  const savedDiv = document.getElementById("savedRecipes");
+  const chartCanvas = document.getElementById("chart");
 
-body.dark {
-  --bg: #121212;
-  --card: #1e1e1e;
-  --text: #f1f1f1;
-}
+  let chart;
 
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-}
-
-.app {
-  max-width: 900px;
-  margin: auto;
-  padding: 1rem;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.card {
-  background: var(--card);
-  padding: 1rem;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-.row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-input, select, button {
-  padding: 0.6rem;
-  font-size: 1rem;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 6px;
-  background: var(--accent);
-  color: white;
-}
-
-button.secondary {
-  background: #64748b;
-}
-
-button.ghost {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid #ccc;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: space-between;
-}
-
-.ingredient {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.ingredient input {
-  flex: 1;
-}
-
-.ingredient button {
-  background: crimson;
-}
-
-#results {
-  margin-bottom: 1rem;
-  line-height: 1.6;
-}
-
-.chart-wrapper {
-  height: 260px;
-  max-width: 500px;
-  margin: auto;
-}
-
-@media (max-width: 600px) {
-  .row {
-    flex-direction: column;
-  }
-  .chart-wrapper {
-    height: 220px;
-  }
-}
-
-/* ===== PRINT / PDF EXPORT ===== */
-@media print {
-  header,
-  #savedRecipes,
-  .actions,
-  #darkBtn {
-    display: none !important;
+  function addIngredient(name = "", percent = "") {
+    const div = document.createElement("div");
+    div.className = "ingredient";
+    div.innerHTML = `
+      <input placeholder="Name" value="${name}">
+      <input type="number" placeholder="%" value="${percent}">
+      <button>✕</button>
+    `;
+    div.querySelector("button").onclick = () => div.remove();
+    ingredientsDiv.appendChild(div);
   }
 
-  body {
-    background: white !important;
+  function autoBalance() {
+    const rows = document.querySelectorAll(".ingredient");
+    let used = 0;
+    rows.forEach((r, i) => {
+      if (i < rows.length - 1) used += Number(r.children[1].value) || 0;
+    });
+    if (rows.length)
+      rows[rows.length - 1].children[1].value = (100 - used).toFixed(2);
   }
 
-  .card {
-    box-shadow: none !important;
-    margin: 0 !important;
+  function calculate() {
+    const total = Number(totalAmount.value);
+    const unit = document.getElementById("unit").value;
+    const rounding = Number(roundingSelect.value);
+    const rows = document.querySelectorAll(".ingredient");
+
+    let sum = 0;
+    rows.forEach(r => sum += Number(r.children[1].value) || 0);
+    if (sum !== 100) {
+      resultsDiv.innerHTML = "<p>Percentages must equal 100%</p>";
+      return;
+    }
+
+    resultsDiv.innerHTML = "";
+    const labels = [];
+    const values = [];
+
+    rows.forEach(r => {
+      const name = r.children[0].value;
+      const percent = Number(r.children[1].value);
+      const amount = ((percent / 100) * total).toFixed(rounding);
+      labels.push(name);
+      values.push(amount);
+      resultsDiv.innerHTML += `<p><strong>${name}</strong>: ${amount} ${unit}</p>`;
+    });
+
+    if (chart) chart.destroy();
+    chart = new Chart(chartCanvas, {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{ data: values }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right" }
+        }
+      }
+    });
   }
 
-  .chart-wrapper {
-    height: 220px;
-    max-width: 420px;
+  function saveRecipe() {
+    const name = prompt("Recipe name:");
+    if (!name) return;
+
+    const recipe = {
+      name,
+      total: totalAmount.value,
+      unit: unit.value,
+      ingredients: [...document.querySelectorAll(".ingredient")].map(r => ({
+        name: r.children[0].value,
+        percent: r.children[1].value
+      }))
+    };
+
+    const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+    recipes.push(recipe);
+    localStorage.setItem("recipes", JSON.stringify(recipes));
+    loadRecipes();
   }
 
-  * {
-    page-break-inside: avoid;
-    page-break-after: avoid;
-    page-break-before: avoid;
+  function loadRecipes() {
+    savedDiv.innerHTML = "";
+    const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+    recipes.forEach(r => {
+      const btn = document.createElement("button");
+      btn.textContent = r.name;
+      btn.onclick = () => loadRecipe(r);
+      savedDiv.appendChild(btn);
+    });
   }
-}
+
+  function loadRecipe(r) {
+    ingredientsDiv.innerHTML = "";
+    totalAmount.value = r.total;
+    unit.value = r.unit;
+    r.ingredients.forEach(i => addIngredient(i.name, i.percent));
+  }
+
+  document.getElementById("addBtn").onclick = () => addIngredient();
+  document.getElementById("balanceBtn").onclick = autoBalance;
+  document.getElementById("calcBtn").onclick = calculate;
+  document.getElementById("saveBtn").onclick = saveRecipe;
+  document.getElementById("pdfBtn").onclick = () => window.print();
+  document.getElementById("darkBtn").onclick = () =>
+    document.body.classList.toggle("dark");
+
+  addIngredient("Water", 75);
+  addIngredient("Chocolate", 15);
+  addIngredient("Hot Water", 10);
+
+  loadRecipes();
+});
