@@ -1,25 +1,137 @@
-:root { --bg: #eef2f7; --card: #ffffff; --text: #1f2937; --accent: #2563eb; }
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #222;
+  --accent: #4f46e5;
+}
 
-body.dark { --bg: #0f172a; --card: #1e293b; --text: #e5e7eb; }
+body.dark {
+  --bg: #121212;
+  --card: #1e1e1e;
+  --text: #f1f1f1;
+}
 
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-.app { max-width: 1000px; margin: auto; padding: 20px; }
+.app {
+  max-width: 900px;
+  margin: auto;
+  padding: 1rem;
+}
 
-header { text-align: center; margin-bottom: 20px; }
+header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
-.card { background: var(--card); padding: 20px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.card {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
 
-.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
 
-input, select, button { padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; }
+input, select, button {
+  padding: 0.6rem;
+  font-size: 1rem;
+}
 
-button { background: var(--accent); color: white; border: none; cursor: pointer; }
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+}
 
-button.secondary { background: #64748b; } button.ghost { background: transparent; color: var(--text); border: none; }
+button.secondary {
+  background: #64748b;
+}
 
-.ingredient { display: flex; gap: 10px; margin-bottom: 10px; }
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #ccc;
+}
 
-.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
 
-canvas { max-width: 400px; margin-top: 20px; }
+.ingredient {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ingredient input {
+  flex: 1;
+}
+
+.ingredient button {
+  background: crimson;
+}
+
+#results {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.chart-wrapper {
+  height: 260px;
+  max-width: 500px;
+  margin: auto;
+}
+
+@media (max-width: 600px) {
+  .row {
+    flex-direction: column;
+  }
+  .chart-wrapper {
+    height: 220px;
+  }
+}
+
+/* ===== PRINT / PDF EXPORT ===== */
+@media print {
+  header,
+  #savedRecipes,
+  .actions,
+  #darkBtn {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .chart-wrapper {
+    height: 220px;
+    max-width: 420px;
+  }
+
+  * {
+    page-break-inside: avoid;
+    page-break-after: avoid;
+    page-break-before: avoid;
+  }
+}
