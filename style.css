@@ -1,0 +1,25 @@
+:root { --bg: #eef2f7; --card: #ffffff; --text: #1f2937; --accent: #2563eb; }
+
+body.dark { --bg: #0f172a; --card: #1e293b; --text: #e5e7eb; }
+
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+.app { max-width: 1000px; margin: auto; padding: 20px; }
+
+header { text-align: center; margin-bottom: 20px; }
+
+.card { background: var(--card); padding: 20px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+input, select, button { padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; }
+
+button { background: var(--accent); color: white; border: none; cursor: pointer; }
+
+button.secondary { background: #64748b; } button.ghost { background: transparent; color: var(--text); border: none; }
+
+.ingredient { display: flex; gap: 10px; margin-bottom: 10px; }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+canvas { max-width: 400px; margin-top: 20px; }

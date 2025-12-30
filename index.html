@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Percentage Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Recipe Percentage Calculator</h1>
+      <p>Professional ingredient scaling & percentage tool</p>
+      <button class="ghost" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+    </header><section class="card">
+  <div class="row">
+    <input type="number" id="totalAmount" placeholder="Total amount" />
+    <select id="unit">
+      <option value="grams">grams</option>
+      <option value="ml">milliliters</option>
+    </select>
+    <select id="rounding">
+      <option value="2">2 decimals</option>
+      <option value="1">1 decimal</option>
+      <option value="0">Whole numbers</option>
+    </select>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Ingredients</h2>
+  <div id="ingredients"></div>
+  <button class="secondary" onclick="addIngredient()">+ Add Ingredient</button>
+</section>
+
+<section class="card actions">
+  <button onclick="autoBalance()">Auto Balance</button>
+  <button onclick="calculate()">Calculate</button>
+  <button onclick="saveRecipe()">Save</button>
+  <button onclick="exportPDF()">Export PDF</button>
+</section>
+
+<section class="card">
+  <h2>Results</h2>
+  <div id="results"></div>
+  <canvas id="chart"></canvas>
+</section>
+
+<section class="card">
+  <h2>Saved Recipes</h2>
+  <div id="savedRecipes"></div>
+</section>
+
+  </div> <script src="script.js"></script></body>
+</html>
