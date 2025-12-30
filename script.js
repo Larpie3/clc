@@ -1,31 +1,115 @@
-const ingredientContainer = document.getElementById('ingredients'); const resultsDiv = document.getElementById('results'); const savedRecipesDiv = document.getElementById('savedRecipes'); const chartCanvas = document.getElementById('chart'); let chart;
+document.addEventListener("DOMContentLoaded", () => {
+  const ingredientContainer = document.getElementById("ingredients");
+  const resultsDiv = document.getElementById("results");
+  const savedRecipesDiv = document.getElementById("savedRecipes");
+  const chartCanvas = document.getElementById("chart");
 
-function addIngredient(name = '', percent = '') { const div = document.createElement('div'); div.className = 'ingredient'; div.innerHTML = <input placeholder="Name" value="${name}"> <input type="number" placeholder="%" value="${percent}"> <button onclick="this.parentElement.remove()">✕</button>; ingredientContainer.appendChild(div); }
+  let chart;
 
-addIngredient('Water', 75); addIngredient('Chocolate', 15); addIngredient('Hot Water', 10);
+  function addIngredient(name = "", percent = "") {
+    const div = document.createElement("div");
+    div.className = "ingredient";
+    div.innerHTML = `
+      <input placeholder="Name" value="${name}">
+      <input type="number" placeholder="%" value="${percent}">
+      <button type="button">✕</button>
+    `;
+    div.querySelector("button").onclick = () => div.remove();
+    ingredientContainer.appendChild(div);
+  }
 
-function autoBalance() { const rows = document.querySelectorAll('.ingredient'); let used = 0; rows.forEach((r, i) => { if (i < rows.length - 1) used += +r.children[1].value || 0; }); rows[rows.length - 1].children[1].value = (100 - used).toFixed(2); }
+  function autoBalance() {
+    const rows = document.querySelectorAll(".ingredient");
+    let used = 0;
+    rows.forEach((r, i) => {
+      if (i < rows.length - 1) used += Number(r.children[1].value) || 0;
+    });
+    if (rows.length)
+      rows[rows.length - 1].children[1].value = (100 - used).toFixed(2);
+  }
 
-function calculate() { const total = +document.getElementById('totalAmount').value; const unit = document.getElementById('unit').value; const rounding = +document.getElementById('rounding').value; const rows = document.querySelectorAll('.ingredient');
+  function calculate() {
+    const total = Number(document.getElementById("totalAmount").value);
+    const unit = document.getElementById("unit").value;
+    const rounding = Number(document.getElementById("rounding").value);
+    const rows = document.querySelectorAll(".ingredient");
 
-resultsDiv.innerHTML = ''; let sum = 0; rows.forEach(r => sum += +r.children[1].value || 0); if (sum !== 100) return resultsDiv.innerHTML = '<p>Percentages must equal 100%</p>';
+    let sum = 0;
+    rows.forEach(r => sum += Number(r.children[1].value) || 0);
+    if (sum !== 100) {
+      resultsDiv.innerHTML = "<p>Percentages must equal 100%</p>";
+      return;
+    }
 
-const labels = []; const values = [];
+    resultsDiv.innerHTML = "";
+    const labels = [];
+    const values = [];
 
-rows.forEach(r => { const name = r.children[0].value; const percent = +r.children[1].value; const amount = ((percent / 100) * total).toFixed(rounding); labels.push(name); values.push(amount); resultsDiv.innerHTML += <p><strong>${name}</strong>: ${amount} ${unit}</p>; });
+    rows.forEach(r => {
+      const name = r.children[0].value;
+      const percent = Number(r.children[1].value);
+      const amount = ((percent / 100) * total).toFixed(rounding);
+      labels.push(name);
+      values.push(amount);
+      resultsDiv.innerHTML += `<p><strong>${name}</strong>: ${amount} ${unit}</p>`;
+    });
 
-drawChart(labels, values); }
+    if (chart) chart.destroy();
+    chart = new Chart(chartCanvas, {
+      type: "pie",
+      data: { labels, datasets: [{ data: values }] }
+    });
+  }
 
-function drawChart(labels, data) { if (chart) chart.destroy(); chart = new Chart(chartCanvas, { type: 'pie', data: { labels, datasets: [{ data }] } }); }
+  function saveRecipe() {
+    const name = prompt("Recipe name:");
+    if (!name) return;
 
-function saveRecipe() { const name = prompt('Recipe name:'); if (!name) return; const recipe = { name, total: totalAmount.value, unit: unit.value, ingredients: [...document.querySelectorAll('.ingredient')].map(r => ({ name: r.children[0].value, percent: r.children[1].value })) }; const recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); recipes.push(recipe); localStorage.setItem('recipes', JSON.stringify(recipes)); loadRecipes(); }
+    const recipe = {
+      name,
+      total: totalAmount.value,
+      unit: unit.value,
+      ingredients: [...document.querySelectorAll(".ingredient")].map(r => ({
+        name: r.children[0].value,
+        percent: r.children[1].value
+      }))
+    };
 
-function loadRecipes() { savedRecipesDiv.innerHTML = ''; const recipes = JSON.parse(localStorage.getItem('recipes') || '[]'); recipes.forEach(r => { const btn = document.createElement('button'); btn.textContent = r.name; btn.onclick = () => loadRecipe(r); savedRecipesDiv.appendChild(btn); }); }
+    const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+    recipes.push(recipe);
+    localStorage.setItem("recipes", JSON.stringify(recipes));
+    loadRecipes();
+  }
 
-function loadRecipe(r) { ingredientContainer.innerHTML = ''; totalAmount.value = r.total; unit.value = r.unit; r.ingredients.forEach(i => addIngredient(i.name, i.percent)); }
+  function loadRecipes() {
+    savedRecipesDiv.innerHTML = "";
+    const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+    recipes.forEach(r => {
+      const btn = document.createElement("button");
+      btn.textContent = r.name;
+      btn.onclick = () => loadRecipe(r);
+      savedRecipesDiv.appendChild(btn);
+    });
+  }
 
-function toggleDarkMode() { document.body.classList.toggle('dark'); }
+  function loadRecipe(r) {
+    ingredientContainer.innerHTML = "";
+    totalAmount.value = r.total;
+    unit.value = r.unit;
+    r.ingredients.forEach(i => addIngredient(i.name, i.percent));
+  }
 
-function exportPDF() { window.print(); }
+  document.getElementById("addBtn").onclick = () => addIngredient();
+  document.getElementById("balanceBtn").onclick = autoBalance;
+  document.getElementById("calcBtn").onclick = calculate;
+  document.getElementById("saveBtn").onclick = saveRecipe;
+  document.getElementById("pdfBtn").onclick = () => window.print();
+  document.getElementById("darkBtn").onclick = () =>
+    document.body.classList.toggle("dark");
 
-loadRecipes();
+  addIngredient("Water", 75);
+  addIngredient("Chocolate", 15);
+  addIngredient("Hot Water", 10);
+
+  loadRecipes();
+});
