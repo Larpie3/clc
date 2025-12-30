@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedDiv = document.getElementById("savedRecipes");
   const chartCanvas = document.getElementById("chart");
 
+  const totalAmountInput = document.getElementById("totalAmount");
+  const unitSelect = document.getElementById("unit");
+  const roundingSelect = document.getElementById("rounding");
+
   let chart;
 
   function addIngredient(name = "", percent = "") {
@@ -12,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     div.innerHTML = `
       <input placeholder="Name" value="${name}">
       <input type="number" placeholder="%" value="${percent}">
-      <button>✕</button>
+      <button type="button">✕</button>
     `;
     div.querySelector("button").onclick = () => div.remove();
     ingredientsDiv.appendChild(div);
@@ -21,23 +25,35 @@ document.addEventListener("DOMContentLoaded", () => {
   function autoBalance() {
     const rows = document.querySelectorAll(".ingredient");
     let used = 0;
+
     rows.forEach((r, i) => {
-      if (i < rows.length - 1) used += Number(r.children[1].value) || 0;
+      if (i < rows.length - 1) {
+        used += Number(r.children[1].value) || 0;
+      }
     });
-    if (rows.length)
+
+    if (rows.length > 0) {
       rows[rows.length - 1].children[1].value = (100 - used).toFixed(2);
+    }
   }
 
   function calculate() {
-    const total = Number(totalAmount.value);
-    const unit = document.getElementById("unit").value;
+    const total = Number(totalAmountInput.value);
+    const unit = unitSelect.value;
     const rounding = Number(roundingSelect.value);
-    const rows = document.querySelectorAll(".ingredient");
 
+    if (!total || total <= 0) {
+      resultsDiv.innerHTML = "<p>Please enter a valid total amount.</p>";
+      return;
+    }
+
+    const rows = document.querySelectorAll(".ingredient");
     let sum = 0;
+
     rows.forEach(r => sum += Number(r.children[1].value) || 0);
+
     if (sum !== 100) {
-      resultsDiv.innerHTML = "<p>Percentages must equal 100%</p>";
+      resultsDiv.innerHTML = "<p>Percentages must equal exactly 100%.</p>";
       return;
     }
 
@@ -46,15 +62,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const values = [];
 
     rows.forEach(r => {
-      const name = r.children[0].value;
+      const name = r.children[0].value || "Unnamed";
       const percent = Number(r.children[1].value);
       const amount = ((percent / 100) * total).toFixed(rounding);
+
       labels.push(name);
       values.push(amount);
-      resultsDiv.innerHTML += `<p><strong>${name}</strong>: ${amount} ${unit}</p>`;
+
+      resultsDiv.innerHTML += `
+        <p><strong>${name}</strong>: ${amount} ${unit}</p>
+      `;
     });
 
     if (chart) chart.destroy();
+
     chart = new Chart(chartCanvas, {
       type: "pie",
       data: {
@@ -77,8 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const recipe = {
       name,
-      total: totalAmount.value,
-      unit: unit.value,
+      total: totalAmountInput.value,
+      unit: unitSelect.value,
       ingredients: [...document.querySelectorAll(".ingredient")].map(r => ({
         name: r.children[0].value,
         percent: r.children[1].value
@@ -94,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadRecipes() {
     savedDiv.innerHTML = "";
     const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+
     recipes.forEach(r => {
       const btn = document.createElement("button");
       btn.textContent = r.name;
@@ -104,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadRecipe(r) {
     ingredientsDiv.innerHTML = "";
-    totalAmount.value = r.total;
-    unit.value = r.unit;
+    totalAmountInput.value = r.total;
+    unitSelect.value = r.unit;
     r.ingredients.forEach(i => addIngredient(i.name, i.percent));
   }
 
@@ -117,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("darkBtn").onclick = () =>
     document.body.classList.toggle("dark");
 
+  // Default ingredients
   addIngredient("Water", 75);
   addIngredient("Chocolate", 15);
   addIngredient("Hot Water", 10);
